@@ -1,76 +1,50 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify
+import pandas as pd
 import requests
-import os
 
 app = Flask(__name__)
 
-# Facebook API Configuration
-FB_API_VERSION = "v19.0"
-FB_API_BASE = f"https://graph.facebook.com/{FB_API_VERSION}"
-
-def get_profile_info(access_token):
-    """Fetch user profile information from Facebook Graph API."""
+# Function to check token status
+def check_token_status(token):
     try:
-        # Get basic profile info
-        profile_response = requests.get(
-            f"{FB_API_BASE}/me",
-            params={'fields': 'id,name,email,birthday,link', 'access_token': access_token},
-            timeout=10
-        )
-        profile_response.raise_for_status()
-        profile_data = profile_response.json()
+        # Replace with a real token validation URL or logic
+        url = "https://api.example.com/validate"
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.get(url, headers=headers)
+        return response.status_code == 200  # 200 means valid token
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
 
-        # Get profile picture
-        picture_response = requests.get(
-            f"{FB_API_BASE}/me/picture",
-            params={'redirect': 'false', 'type': 'large', 'access_token': access_token},
-            timeout=10
-        )
-        picture_response.raise_for_status()
-        picture_data = picture_response.json()
+# API endpoint for file upload and token validation
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
 
-        # Get posts count safely
-        posts_response = requests.get(
-            f"{FB_API_BASE}/me/feed",
-            params={'limit': 0, 'summary': 'true', 'access_token': access_token},
-            timeout=10
-        )
-        posts_response.raise_for_status()
-        posts_data = posts_response.json()
+    file = request.files['file']
+    try:
+        # Assuming the file is a CSV with a 'token' column
+        df = pd.read_csv(file)
+        if 'token' not in df.columns:
+            return jsonify({'error': 'File must contain a "token" column'}), 400
+        
+        # Check tokens
+        df['status'] = df['token'].apply(check_token_status)
+        live_tokens = df[df['status'] == True]
+        dead_tokens = df[df['status'] == False]
 
-        return {
-            'id': profile_data.get('id'),
-            'name': profile_data.get('name'),
-            'email': profile_data.get('email', 'Not available'),
-            'birthday': profile_data.get('birthday', 'Not available'),
-            'profile_link': profile_data.get('link'),
-            'picture': picture_data.get('data', {}).get('url', 'https://via.placeholder.com/150'),
-            'posts_count': posts_data.get('summary', {}).get('total_count', 0)
-        }
+        # Save results
+        live_tokens.to_csv('live_tokens.csv', index=False)
+        dead_tokens.to_csv('dead_tokens.csv', index=False)
+        
+        return jsonify({'message': 'Tokens processed', 
+                        'live_count': len(live_tokens), 
+                        'dead_count': len(dead_tokens)}), 200
 
-    except requests.exceptions.RequestException as e:
-        return {'error': f"API request error: {str(e)}"}
-    except ValueError:
-        return {'error': "Invalid response from Facebook API"}
-    except KeyError:
-        return {'error': "Unexpected data structure in Facebook response"}
+    except Exception as e:
+        return jsonify({'error': f'Error processing file: {e}'}), 500
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    """Handles user requests and renders the profile page."""
-    profile_info = None
-    error = None
-    
-    if request.method == 'POST':
-        access_token = request.form.get('access_token', '').strip()
-        if access_token:
-            profile_info = get_profile_info(access_token)
-            if 'error' in profile_info:
-                error = profile_info['error']
-                profile_info = None
-
-    return render_template('index.html', profile=profile_info, error=error)
-
+# Run the application
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)
