@@ -10,6 +10,9 @@
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 2rem;
         }
         .profile-card {
@@ -18,6 +21,7 @@
             border-radius: 15px;
             padding: 2rem;
             margin-top: 2rem;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
         .profile-picture {
             width: 150px;
@@ -26,55 +30,53 @@
             object-fit: cover;
             border: 3px solid white;
         }
+        a {
+            color: #FFD700;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center mb-4">Facebook Profile Information</h1>
-        
+
         <div class="row justify-content-center">
             <div class="col-md-6">
+                <!-- Form for Access Token -->
                 <form method="POST">
                     <div class="mb-3">
                         <label for="access_token" class="form-label">Facebook Access Token</label>
                         <input type="text" class="form-control" id="access_token" name="access_token" required>
-                        <div class="form-text">Enter a valid Facebook access token</div>
+                        <div class="form-text text-light">Enter a valid Facebook access token</div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Get Profile Info</button>
                 </form>
 
+                <!-- Display Error if exists -->
                 {% if error %}
-                    <div class="alert alert-danger mt-4">
-                        Error: {{ error }}
-                    </div>
+                <div class="alert alert-danger mt-4">
+                    ❌ Error: {{ error }}
+                </div>
                 {% endif %}
 
+                <!-- Profile Card -->
                 {% if profile %}
-                <div class="profile-card mt-4">
-                    <div class="text-center">
-                        <img src="{{ profile.picture }}" alt="Profile Picture" class="profile-picture mb-3">
-                        <h2>{{ profile.name }}</h2>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <div class="mb-3">
-                            <strong>Facebook ID:</strong> {{ profile.id }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Email:</strong> {{ profile.email or 'Not available' }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Birthday:</strong> {{ profile.birthday or 'Not available' }}
-                        </div>
-                        <div class="mb-3">
-                            <strong>Profile Link:</strong>
-                            <a href="{{ profile.profile_link }}" target="_blank" class="text-white">
-                                {{ profile.profile_link }}
-                            </a>
-                        </div>
-                        <div class="mb-3">
-                            <strong>Posts Count:</strong> {{ profile.posts_count }}
-                        </div>
+                <div class="profile-card mt-4 text-center">
+                    <img src="{{ profile.picture or 'https://via.placeholder.com/150' }}" 
+                         alt="Profile Picture" class="profile-picture mb-3">
+                    <h2>{{ profile.name }}</h2>
+
+                    <div class="mt-4 text-start">
+                        <p><strong>📌 Facebook ID:</strong> {{ profile.id }}</p>
+                        <p><strong>📧 Email:</strong> {{ profile.email or 'Not available' }}</p>
+                        <p><strong>🎂 Birthday:</strong> {{ profile.birthday or 'Not available' }}</p>
+                        <p><strong>🔗 Profile Link:</strong> 
+                            <a href="{{ profile.profile_link }}" target="_blank">{{ profile.profile_link }}</a>
+                        </p>
+                        <p><strong>📝 Posts Count:</strong> {{ profile.posts_count }}</p>
                     </div>
                 </div>
                 {% endif %}
