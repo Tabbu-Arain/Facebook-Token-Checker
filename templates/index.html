@@ -1,57 +1,140 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Token Validation</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f4f7f6;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-        .container {
-            background-color: white;
-            padding: 3rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .alert {
-            margin-top: 1rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook Token Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 600px;
+    }
+    .container {
+      text-align: center;
+    }
+    input, button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 90%;
+    }
+    .result-box {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .result-box img {
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border: 2px solid #ddd;
+      margin-bottom: 15px;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+    button {
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2 class="text-center">Upload CSV for Token Validation</h2>
+  <div class="container">
+    <h1>Facebook Token Checker</h1>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5839559397534246"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-6t+ed+2i-1n-4w"
+     data-ad-client="ca-pub-5839559397534246"
+     data-ad-slot="8106094457"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5839559397534246"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-gw-3+1f-3d+2z"
+     data-ad-client="ca-pub-5839559397534246"
+     data-ad-slot="1951749645"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+    <input type="text" id="accessToken" placeholder="Enter your Facebook access token" />
+    <button onclick="checkToken()">Check Token</button>
+    <div class="result" id="result"></div>
+  </div>
 
-        <!-- Form to upload file -->
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="file" class="form-label">Choose a CSV File</label>
-                <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Upload</button>
-        </form>
+  <script>
+    async function checkToken() {
+      const accessToken = document.getElementById("accessToken").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
 
-        <!-- Displaying Error or Success Message -->
-        {% if error %}
-            <div class="alert alert-danger mt-4">
-                <strong>Error:</strong> {{ error }}
-            </div>
-        {% elif message %}
-            <div class="alert alert-success mt-4">
-                <strong>{{ message }}</strong>
-                <br>Live Tokens Count: {{ live_count }}
-                <br>Dead Tokens Count: {{ dead_count }}
-            </div>
-        {% endif %}
-    </div>
+      if (!accessToken) {
+        resultDiv.innerHTML = '<p class="error">Please enter an access token.</p>';
+        return;
+      }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      // Show a loading message
+      resultDiv.innerHTML = "<p>Loading...</p>";
+
+      try {
+        const response = await fetch(window.location.href, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken }),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.innerHTML = `
+            <div class="result-box">
+              <img src="${data.picture.data.url}" alt="Profile Picture" />
+              <p><strong>Name:</strong> ${data.name}</p>
+              <p><strong>Email:</strong> ${data.email || "Not available"}</p>
+              <p><strong>Birthday:</strong> ${data.birthday || "Not available"}</p>
+              <p><strong>Facebook ID:</strong> ${data.id}</p>
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      }
+    }
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5839559397534246"
+     crossorigin="anonymous"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-6t+ed+2i-1n-4w"
+     data-ad-client="ca-pub-5839559397534246"
+     data-ad-slot="8106094457"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
 </body>
 </html>
