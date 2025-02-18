@@ -14,10 +14,7 @@ def get_profile_info(access_token):
         # Get basic profile info
         profile_response = requests.get(
             f"{FB_API_BASE}/me",
-            params={
-                'fields': 'id,name,email,birthday,link',
-                'access_token': access_token
-            },
+            params={'fields': 'id,name,email,birthday,link', 'access_token': access_token},
             timeout=10
         )
         profile_response.raise_for_status()
@@ -26,24 +23,16 @@ def get_profile_info(access_token):
         # Get profile picture
         picture_response = requests.get(
             f"{FB_API_BASE}/me/picture",
-            params={
-                'redirect': 'false',
-                'type': 'large',
-                'access_token': access_token
-            },
+            params={'redirect': 'false', 'type': 'large', 'access_token': access_token},
             timeout=10
         )
         picture_response.raise_for_status()
         picture_data = picture_response.json()
 
-        # Get posts count
+        # Get posts count safely
         posts_response = requests.get(
             f"{FB_API_BASE}/me/feed",
-            params={
-                'limit': 0,
-                'summary': 'true',
-                'access_token': access_token
-            },
+            params={'limit': 0, 'summary': 'true', 'access_token': access_token},
             timeout=10
         )
         posts_response.raise_for_status()
@@ -55,15 +44,16 @@ def get_profile_info(access_token):
             'email': profile_data.get('email'),
             'birthday': profile_data.get('birthday'),
             'profile_link': profile_data.get('link'),
-            'picture': picture_data['data']['url'],
+            'picture': picture_data.get('data', {}).get('url', ''),
             'posts_count': posts_data.get('summary', {}).get('total_count', 0)
         }
 
-    except requests.exceptions.HTTPError as e:
-        error = e.response.json().get('error', {})
-        return {'error': error.get('message', 'Unknown error')}
-    except Exception as e:
-        return {'error': str(e)}
+    except requests.exceptions.RequestException as e:
+        return {'error': f"API request error: {str(e)}"}
+    except ValueError:
+        return {'error': "Invalid response from Facebook API"}
+    except KeyError:
+        return {'error': "Unexpected data structure in Facebook response"}
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
