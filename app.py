@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -45,6 +46,12 @@ def upload_file():
     except Exception as e:
         return jsonify({'error': f'Error processing file: {e}'}), 500
 
+# Serve the index page with the upload form
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 # Run the application
 if __name__ == '__main__':
     app.run(debug=True)
+
