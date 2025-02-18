@@ -9,7 +9,7 @@ FB_API_VERSION = "v19.0"
 FB_API_BASE = f"https://graph.facebook.com/{FB_API_VERSION}"
 
 def get_profile_info(access_token):
-    """Fetch profile information from Facebook Graph API"""
+    """Fetch user profile information from Facebook Graph API."""
     try:
         # Get basic profile info
         profile_response = requests.get(
@@ -41,10 +41,10 @@ def get_profile_info(access_token):
         return {
             'id': profile_data.get('id'),
             'name': profile_data.get('name'),
-            'email': profile_data.get('email'),
-            'birthday': profile_data.get('birthday'),
+            'email': profile_data.get('email', 'Not available'),
+            'birthday': profile_data.get('birthday', 'Not available'),
             'profile_link': profile_data.get('link'),
-            'picture': picture_data.get('data', {}).get('url', ''),
+            'picture': picture_data.get('data', {}).get('url', 'https://via.placeholder.com/150'),
             'posts_count': posts_data.get('summary', {}).get('total_count', 0)
         }
 
@@ -57,6 +57,7 @@ def get_profile_info(access_token):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    """Handles user requests and renders the profile page."""
     profile_info = None
     error = None
     
@@ -72,4 +73,4 @@ def index():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
